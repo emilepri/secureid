@@ -45,3 +45,20 @@ def test_fenetre_apercu_et_liste(app, tmp_path):
     win.cards_tab.refresh()
     assert win.cards_tab.table.rowCount() == 1
     assert win.cards_tab.table.item(0, 6).text() == "ACTIVE"
+
+
+def test_onglet_emission_en_masse(app, tmp_path):
+    from apps.issuer.batch_tab import BatchTab
+    Session = init_db(get_engine(tmp_path / "t.db"))
+    svc = IssuerService(Session, Ed25519PrivateKey.generate(), "k1", "test", tmp_path / "data", tmp_path / "out")
+    photos = tmp_path / "photos"
+    photos.mkdir()
+    Image.new("RGB", (600, 800)).save(photos / "a.jpg")
+    f = tmp_path / "lot.csv"
+    f.write_text("nom;prenom;date_naissance;photo\nDiop;Awa;15/01/2003;a.jpg\nFall;Ibou;99/99/2000;a.jpg\n",
+                 encoding="utf-8")
+    tab = BatchTab(svc, tmp_path / "out", on_issued=lambda: None)
+    tab.file, tab.photos = f, photos
+    tab.analyse()
+    assert tab.table.rowCount() == 2 and tab.issue_btn.isEnabled()
+    assert "1 ligne(s) valide(s), 1 ligne(s) en erreur" in tab.summary.text()

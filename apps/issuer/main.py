@@ -279,12 +279,16 @@ class CardsTab(QWidget):
         self.table.setHorizontalHeaderLabels(self.COLUMNS)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
         lay.addWidget(self.table)
+        lay.addWidget(QLabel("Astuce : Ctrl+clic ou Maj+clic pour sélectionner plusieurs cartes à imprimer sur planches.",
+                             objectName="hint"))
 
         actions = QHBoxLayout()
+        self.sheets_btn = QPushButton("Planches A4 de la sélection")
+        self.sheets_btn.clicked.connect(self.print_sheets)
         self.open_btn = QPushButton("Ouvrir le PDF")
         self.revoke_btn = QPushButton("Révoquer…", objectName="danger")
         self.audit_btn = QPushButton("Vérifier le journal d'audit")
@@ -292,6 +296,7 @@ class CardsTab(QWidget):
         self.revoke_btn.clicked.connect(self.revoke)
         self.audit_btn.clicked.connect(self.check_audit)
         actions.addWidget(self.open_btn)
+        actions.addWidget(self.sheets_btn)
         actions.addWidget(self.revoke_btn)
         self.export_btn = QPushButton("Exporter pour le vérificateur")
         self.export_btn.clicked.connect(self.export_verifier)
@@ -327,6 +332,28 @@ class CardsTab(QWidget):
             QMessageBox.information(self, "SecureID", "Sélectionne d'abord une carte dans la liste.")
             return None
         return self.rows[rows[0].row()]
+
+    def print_sheets(self) -> None:
+        rows = sorted(i.row() for i in self.table.selectionModel().selectedRows())
+        if not rows:
+            QMessageBox.information(self, "SecureID", "Sélectionne une ou plusieurs cartes (Ctrl+clic).")
+            return
+        cards = [self.rows[r] for r in rows]
+        revoked = [c["card_id"] for c in cards if c["statut"] == "REVOQUEE"]
+        if revoked:
+            QMessageBox.warning(self, "SecureID", "Impossible d'imprimer des cartes révoquées : " + ", ".join(revoked))
+            return
+        from datetime import datetime
+        from core.sheets import export_sheets
+        try:
+            faces = [self.service.render_existing(c["card_id"]) for c in cards]
+            path, n = export_sheets(faces, OUT_DIR / f"planches_{datetime.now():%Y%m%d_%H%M%S}.pdf")
+        except (ValueError, ValidationError) as exc:
+            QMessageBox.warning(self, "SecureID", str(exc))
+            return
+        QMessageBox.information(self, "Planches A4", f"{len(cards)} carte(s) sur {n} feuille(s) recto-verso.\n\n"
+                                "Imprime à 100 % (taille réelle), en recto-verso sur le bord long.")
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(path.resolve())))
 
     def open_pdf(self) -> None:
         row = self.selected()
@@ -410,7 +437,13 @@ class MainWindow(QMainWindow):
         tabs = QTabWidget()
         self.cards_tab = CardsTab(service)
         self.issue_tab = IssueTab(service, on_issued=self.cards_tab.refresh)
+        from apps.issuer.batch_tab import BatchTab
+        self.batch_tab = BatchTab(service, OUT_DIR, on_issued=self.cards_tab.refresh)
         tabs.addTab(self.issue_tab, "Émettre une carte")
+        batch_scroll = QScrollArea(widgetResizable=True)
+        batch_scroll.setFrameShape(QFrame.NoFrame)
+        batch_scroll.setWidget(self.batch_tab)
+        tabs.addTab(batch_scroll, "Émission en masse")
         tabs.addTab(self.cards_tab, "Cartes émises")
         is_admin = user.is_admin if user else True
         self.cards_tab.apply_rights(is_admin)

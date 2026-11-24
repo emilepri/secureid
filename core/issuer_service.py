@@ -142,6 +142,10 @@ class IssuerService:
 
     # ------------------------------------------------------------ émission
     def issue(self, req: CardRequest) -> Card:
+        return self.issue_with_faces(req)[0]
+
+    def issue_with_faces(self, req: CardRequest) -> tuple[Card, Image.Image, Image.Image]:
+        """Émet la carte et renvoie aussi le recto et le verso (pour les planches d'impression)."""
         validate(req)
         card_id = self.next_card_id(req.profil)
         data, champs = self.build_card_data(req, card_id)
@@ -164,7 +168,22 @@ class IssuerService:
             s.commit()
             s.refresh(card)
             s.expunge(card)
-        return card
+        return card, recto, verso
+
+    def render_existing(self, card_id: str) -> tuple[Image.Image, Image.Image]:
+        """Redessine une carte déjà émise à partir de la base (jeton signé + photo enregistrée)."""
+        with self.Session() as s:
+            card = s.get(Card, card_id)
+            if card is None:
+                raise ValidationError(f"Carte {card_id} introuvable.")
+            h = card.holder
+            pic = Image.open(h.photo_path).convert("RGB") if h.photo_path and Path(h.photo_path).exists() \
+                else Image.new("RGB", photo.PHOTO_SIZE, (226, 232, 240))
+            data = CardData(prenom=h.prenom, nom=h.nom, card_id=card.card_id, role=h.role, naiss=h.date_naissance,
+                            exp=card.expire_le, token=card.token, photo=photo.normalize(pic), emis=card.emis_le,
+                            fonction=h.fonction or "", service=h.service or "", profile=PROFILES[card.profil])
+            modele = card.modele
+        return render_card(data, modele)
 
     # ------------------------------------------------------------ consultation
     def list_cards(self, search: str = "") -> list[dict]:
