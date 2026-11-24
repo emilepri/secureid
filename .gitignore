@@ -4,3 +4,4 @@ __pycache__/
 keys/
 *.db
 .pytest_cache/
+sortie/

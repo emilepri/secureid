@@ -17,8 +17,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 from core import crypto
 
 PREFIX = "SID1"
-VERSION = 1
-REQUIRED_FIELDS = {"kid", "id", "nom", "prenom", "naiss", "role", "etab", "emis", "exp", "ph"}
+REQUIRED_FIELDS = {"kid", "id", "nom", "prenom", "naiss", "role", "emis", "exp", "ph"}
 
 # Statuts renvoyés au vérificateur
 AUTHENTIQUE = "AUTHENTIQUE"
@@ -55,8 +54,9 @@ def encode_token(data: dict, private_key: Ed25519PrivateKey) -> str:
     missing = REQUIRED_FIELDS - data.keys()
     if missing:
         raise ValueError(f"Champs manquants : {sorted(missing)}")
-    payload = {"v": VERSION, **data}
-    body = canonical(payload)
+    # La version du format est portée par le préfixe SID1 : rien de plus dans le payload,
+    # pour garder un QR code le plus petit possible.
+    body = canonical(data)
     signature = crypto.sign(private_key, body)
     return f"{PREFIX}.{_b64e(body)}.{_b64e(signature)}"
 
