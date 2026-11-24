@@ -89,6 +89,13 @@
           <p>À l'entrée, l'application lit le QR par webcam et affiche le verdict en grand, avec les données d'origine pour comparer.</p>
         </li>
       </ol>
+      <figure class="video">
+        <video controls preload="none" playsinline width="1280" height="720" poster="img/video_affiche.jpg">
+          <source src="video/secureid-demo.mp4" type="video/mp4">
+          Votre navigateur ne lit pas la vidéo : <a href="video/secureid-demo.mp4">téléchargez-la ici</a>.
+        </video>
+        <figcaption>La démonstration complète en 1 min 45 : émission, fraude détectée, révocation et journal d'audit.</figcaption>
+      </figure>
       <ul class="legende" aria-label="Les verdicts possibles">
         <li class="ok">Authentique</li><li class="rev">Révoquée</li><li class="rev">Expirée</li><li class="faux">Falsifiée</li><li class="gris">Illisible</li>
       </ul>
@@ -183,7 +190,7 @@
       </div>
       <!-- FORMULAIRE : remplace action="#" par ton adresse Formspree, par exemple
            action="https://formspree.io/f/abcdwxyz". Cette adresse n'est pas secrète : elle peut être publique. -->
-      <form class="formulaire" id="form-demo" action="https://formspree.io/f/mqpqwgkg" method="post">
+      <form class="formulaire" id="form-demo" action="#" method="post">
         <div class="champ"><label for="nom">Nom et prénom</label><input id="nom" name="nom" autocomplete="name" required></div>
         <div class="champ"><label for="etablissement">Établissement ou entreprise</label><input id="etablissement" name="etablissement" autocomplete="organization" required></div>
         <div class="champ"><label for="email">E-mail professionnel</label><input id="email" name="email" type="email" autocomplete="email" required></div>
