@@ -79,3 +79,20 @@ class AuditLog(Base):
     details: Mapped[str] = mapped_column(Text, default="")
     hash_precedent: Mapped[str] = mapped_column(String(64))
     hash: Mapped[str] = mapped_column(String(64))
+
+
+class Operator(Base):
+    """Compte opérateur : le mot de passe n'est jamais stocké, seulement son hash Argon2."""
+
+    __tablename__ = "operators"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    login: Mapped[str] = mapped_column(String(40), unique=True)
+    nom_complet: Mapped[str] = mapped_column(String(120), default="")
+    hash_argon2: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(20), default="operateur")  # admin | operateur
+    actif: Mapped[bool] = mapped_column(Boolean, default=True)
+    cree_le: Mapped[str] = mapped_column(String(25))
+    derniere_connexion: Mapped[str | None] = mapped_column(String(25))
+    echecs: Mapped[int] = mapped_column(Integer, default=0)
+    verrouille_jusqu: Mapped[str | None] = mapped_column(String(25))

@@ -9,15 +9,15 @@ from datetime import date
 from pathlib import Path
 
 from PIL import Image
-from PySide6.QtCore import QDate, Qt, QTimer, QUrl
+from PySide6.QtCore import QDate, QEvent, QObject, Qt, QTimer, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QPalette, QPixmap
 from PySide6.QtWidgets import (
-    QAbstractItemView, QApplication, QComboBox, QDateEdit, QDialog, QDialogButtonBox, QFileDialog,
+    QAbstractItemView, QApplication, QComboBox, QDateEdit, QDialog, QFileDialog,
     QFormLayout, QFrame, QGroupBox, QScrollArea, QHBoxLayout, QHeaderView, QInputDialog, QLabel, QLineEdit, QMainWindow,
     QMessageBox, QPushButton, QSpinBox, QTableWidget, QTableWidgetItem, QTabWidget, QVBoxLayout, QWidget,
 )
 
-from core import crypto
+from core.auth import AuthService, CurrentUser
 from core.issuer_service import CardRequest, IssuerService, ValidationError
 from core.render import PROFILES
 from core.templates import DEFAULT_TEMPLATE, TEMPLATES
@@ -52,6 +52,14 @@ QTableWidget { background: white; border: 1px solid #cbd5e1; border-radius: 8px;
 QHeaderView::section { background: #0f2a5c; color: white; padding: 6px; border: none; font-weight: 600; }
 QLabel#header { background: #0f2a5c; color: white; font-size: 18px; font-weight: 700; padding: 14px 18px; }
 QLabel#hint { color: #64748b; }
+QLabel#dialogTitle { font-size: 16px; font-weight: 700; color: #0f2a5c; }
+QLabel#brand { font-size: 30px; font-weight: 800; color: #0f2a5c; padding-top: 8px; }
+QLabel#error { background: #fee2e2; color: #991b1b; border-radius: 6px; padding: 8px; }
+QLabel#info { background: #e0f2fe; color: #075985; border-radius: 6px; padding: 8px; }
+QWidget#headerBar { background: #0f2a5c; }
+QLabel#userLabel { color: #cbd5e1; padding-right: 8px; }
+QPushButton#headerBtn { background: transparent; color: white; border: 1px solid #3b5998; }
+QPushButton#headerBtn:hover { background: #1e4fa8; }
 QScrollArea { border: none; background: transparent; }
 QScrollArea > QWidget > QWidget { background: transparent; }
 QScrollBar:vertical { width: 12px; background: #e2e8f0; border-radius: 6px; }
@@ -89,63 +97,6 @@ def pil_to_pixmap(img: Image.Image) -> QPixmap:
     pix = QPixmap()
     pix.loadFromData(buf.getvalue(), "PNG")
     return pix
-
-
-# ------------------------------------------------------------------ déverrouillage
-class UnlockDialog(QDialog):
-    """Demande l'opérateur et le mot de passe de la clé ; crée la clé au premier lancement."""
-
-    def __init__(self, priv_path: Path):
-        super().__init__()
-        self.priv_path = priv_path
-        self.new_key = not priv_path.exists()
-        self.private_key = None
-        self.setWindowTitle("SecureID – Déverrouillage")
-        self.setMinimumWidth(420)
-
-        lay = QVBoxLayout(self)
-        intro = ("Première utilisation : choisis le mot de passe qui protégera la clé de signature "
-                 "(12 caractères minimum). Il n'est enregistré nulle part : ne le perds pas."
-                 if self.new_key else "Saisis le mot de passe de la clé de signature pour émettre des cartes.")
-        hint = QLabel(intro)
-        hint.setWordWrap(True)
-        hint.setObjectName("hint")
-        lay.addWidget(hint)
-
-        form = QFormLayout()
-        self.operator = QLineEdit()
-        self.operator.setPlaceholderText("ex. e.priso")
-        self.password = QLineEdit(echoMode=QLineEdit.Password)
-        form.addRow("Opérateur", self.operator)
-        form.addRow("Mot de passe", self.password)
-        if self.new_key:
-            self.confirm = QLineEdit(echoMode=QLineEdit.Password)
-            form.addRow("Confirmation", self.confirm)
-        lay.addLayout(form)
-
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        buttons.button(QDialogButtonBox.Ok).setText("Créer la clé" if self.new_key else "Déverrouiller")
-        buttons.accepted.connect(self._accept)
-        buttons.rejected.connect(self.reject)
-        lay.addWidget(buttons)
-
-    def _accept(self) -> None:
-        op, pwd = self.operator.text().strip(), self.password.text()
-        if not op:
-            QMessageBox.warning(self, "SecureID", "Indique ton nom d'opérateur.")
-            return
-        try:
-            if self.new_key:
-                if pwd != self.confirm.text():
-                    raise ValueError("Les deux mots de passe ne correspondent pas.")
-                crypto.generate_keypair(KID, pwd, self.priv_path.parent)
-            self.private_key = crypto.load_private_key(self.priv_path, pwd)
-        except (ValueError, TypeError) as exc:
-            msg = str(exc) if self.new_key else "Mot de passe incorrect."
-            QMessageBox.warning(self, "SecureID", msg)
-            self.password.clear()
-            return
-        self.accept()
 
 
 # ------------------------------------------------------------------ onglet émission
@@ -400,6 +351,12 @@ class CardsTab(QWidget):
         self.export_verifier(silent=True)  # la liste de révocation locale reste à jour
         self.refresh()
 
+    def apply_rights(self, is_admin: bool) -> None:
+        """Révoquer, exporter et contrôler le journal sont réservés aux administrateurs."""
+        for btn in (self.revoke_btn, self.export_btn, self.audit_btn):
+            btn.setEnabled(is_admin)
+            btn.setToolTip("" if is_admin else "Réservé aux administrateurs")
+
     def export_verifier(self, silent: bool = False) -> None:
         """Met à jour verif/ : clé publique + liste de révocation signée, pour l'appli de vérification."""
         try:
@@ -423,41 +380,153 @@ class CardsTab(QWidget):
 
 # ------------------------------------------------------------------ fenêtre principale
 class MainWindow(QMainWindow):
-    def __init__(self, service: IssuerService):
+    def __init__(self, service: IssuerService, auth: AuthService | None = None,
+                 user: CurrentUser | None = None, on_logout=None):
         super().__init__()
+        self.service, self.auth, self.user, self.on_logout = service, auth, user, on_logout
+        self.logging_out = False
         self.setWindowTitle("SecureID – Émission de cartes")
         self.resize(1280, 860)
         central = QWidget()
         lay = QVBoxLayout(central)
         lay.setContentsMargins(0, 0, 0, 0)
-        header = QLabel("SecureID  ·  Émission de cartes sécurisées", objectName="header")
-        lay.addWidget(header)
+        lay.setSpacing(0)
+
+        bar = QWidget(objectName="headerBar")
+        bl = QHBoxLayout(bar)
+        bl.setContentsMargins(0, 0, 14, 0)
+        bl.addWidget(QLabel("SecureID  ·  Émission de cartes sécurisées", objectName="header"))
+        bl.addStretch()
+        if user:
+            bl.addWidget(QLabel(f"Connecté : {user.label}", objectName="userLabel"))
+            pwd_btn = QPushButton("Changer mon mot de passe", objectName="headerBtn")
+            out_btn = QPushButton("Se déconnecter", objectName="headerBtn")
+            pwd_btn.clicked.connect(self.change_password)
+            out_btn.clicked.connect(lambda: self.logout("manuelle"))
+            bl.addWidget(pwd_btn)
+            bl.addWidget(out_btn)
+        lay.addWidget(bar)
 
         tabs = QTabWidget()
         self.cards_tab = CardsTab(service)
         self.issue_tab = IssueTab(service, on_issued=self.cards_tab.refresh)
         tabs.addTab(self.issue_tab, "Émettre une carte")
         tabs.addTab(self.cards_tab, "Cartes émises")
+        is_admin = user.is_admin if user else True
+        self.cards_tab.apply_rights(is_admin)
+        if user and is_admin and auth:
+            from apps.issuer.operators_tab import OperatorsTab
+            tabs.addTab(OperatorsTab(auth, user), "Opérateurs")
         lay.addWidget(tabs)
         self.setCentralWidget(central)
-        self.statusBar().showMessage(f"Opérateur : {service.operateur}   ·   Clé : {service.kid}")
+        who = user.login if user else service.operateur
+        self.statusBar().showMessage(f"Opérateur : {who}   ·   Clé : {service.kid}   ·   "
+                                     f"Déconnexion automatique après {INACTIVITY_MIN} min d'inactivité")
+
+    def change_password(self) -> None:
+        from apps.issuer.dialogs import ChangePasswordDialog
+        ChangePasswordDialog(self.auth, self.user).exec()
+
+    def logout(self, reason: str) -> None:
+        if self.logging_out:
+            return
+        self.logging_out = True
+        if self.on_logout:
+            self.on_logout(reason)
+
+    def closeEvent(self, event) -> None:
+        # Fermer la fenêtre = se déconnecter et quitter l'application
+        if not self.logging_out and self.on_logout:
+            self.logging_out = True
+            self.on_logout("fermeture", quit_app=True)
+        super().closeEvent(event)
+
+
+INACTIVITY_MIN = 10
+
+
+class InactivityWatcher(QObject):
+    """Déconnecte l'opérateur après une période sans clavier ni souris."""
+
+    EVENTS = {QEvent.KeyPress, QEvent.MouseButtonPress, QEvent.MouseMove, QEvent.Wheel}
+
+    def __init__(self, minutes: int, on_timeout):
+        super().__init__()
+        self.timer = QTimer(self, singleShot=True, interval=minutes * 60 * 1000)
+        self.timer.timeout.connect(on_timeout)
+
+    def eventFilter(self, obj, event) -> bool:
+        if event.type() in self.EVENTS and self.timer.isActive():
+            self.timer.start()
+        return False
+
+
+class SessionController:
+    """Enchaîne : connexion -> fenêtre principale -> déconnexion -> connexion..."""
+
+    def __init__(self, app: QApplication, service: IssuerService, auth: AuthService):
+        self.app, self.service, self.auth = app, service, auth
+        self.window: MainWindow | None = None
+        self.user: CurrentUser | None = None
+        self.watcher = InactivityWatcher(INACTIVITY_MIN, lambda: self.end_session("inactivité"))
+        app.installEventFilter(self.watcher)
+
+    def start(self, message: str = "") -> None:
+        from apps.issuer.dialogs import AccountForm, LoginDialog
+        if not self.auth.has_operators():
+            first = AccountForm(self.auth, "Créer le premier administrateur",
+                                "Aucun compte n'existe encore. Crée le compte administrateur : il pourra ensuite "
+                                "créer les comptes des opérateurs.", fixed_role="admin")
+            if first.exec() != QDialog.Accepted:
+                self.app.quit()
+                return
+            message = "Compte administrateur créé. Connecte-toi pour continuer."
+        login = LoginDialog(self.auth, message)
+        if login.exec() != QDialog.Accepted:
+            self.app.quit()
+            return
+        self.user = login.user
+        self.service.operateur = self.user.login
+        self.window = MainWindow(self.service, self.auth, self.user, self.end_session)
+        screen = self.app.primaryScreen().availableGeometry()
+        if screen.width() < 1300 or screen.height() < 900:
+            self.window.showMaximized()
+        else:
+            self.window.show()
+        self.watcher.timer.start()
+
+    def end_session(self, reason: str, quit_app: bool = False) -> None:
+        if self.user is None:
+            return
+        self.watcher.timer.stop()
+        self.auth.logout(self.user, reason)
+        self.user = None
+        window, self.window = self.window, None
+        if window is not None:
+            window.logging_out = True
+            window.close()
+            window.deleteLater()
+        if quit_app:
+            self.app.quit()
+            return
+        msg = ("Session fermée après 10 minutes d'inactivité." if reason == "inactivité"
+               else "Tu es déconnecté.")
+        QTimer.singleShot(0, lambda: self.start(msg))
 
 
 def main() -> None:
     app = QApplication(sys.argv)
     apply_light_theme(app)
-    dialog = UnlockDialog(KEYS_DIR / f"{KID}_private.pem")
-    if dialog.exec() != QDialog.Accepted:
+    app.setQuitOnLastWindowClosed(False)  # on gère nous-mêmes la fin (retour à l'écran de connexion)
+    from apps.issuer.dialogs import UnlockKeyDialog
+    unlock = UnlockKeyDialog(KEYS_DIR / f"{KID}_private.pem", KID)
+    if unlock.exec() != QDialog.Accepted:
         sys.exit(0)
     DATA_DIR.mkdir(exist_ok=True)
     Session = init_db(get_engine(DATA_DIR / "secureid.db"))
-    service = IssuerService(Session, dialog.private_key, KID, dialog.operator.text().strip(), DATA_DIR, OUT_DIR)
-    window = MainWindow(service)
-    screen = app.primaryScreen().availableGeometry()
-    if screen.width() < 1300 or screen.height() < 900:
-        window.showMaximized()  # petit écran : on prend toute la place disponible
-    else:
-        window.show()
+    service = IssuerService(Session, unlock.private_key, KID, "poste", DATA_DIR, OUT_DIR)
+    controller = SessionController(app, service, AuthService(Session))
+    QTimer.singleShot(0, controller.start)
     sys.exit(app.exec())
 
 
