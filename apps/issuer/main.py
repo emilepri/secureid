@@ -24,9 +24,7 @@ from core.templates import DEFAULT_TEMPLATE, TEMPLATES
 from db.database import get_engine, init_db
 
 KID = "sid2026"
-KEYS_DIR = Path("keys")
-DATA_DIR = Path("data")
-OUT_DIR = Path("sortie")
+from core.paths import DATA_DIR, KEYS_DIR, OUT_DIR, TRUST_DIR  # noqa: E402
 
 STYLE = """
 QWidget { color: #0f172a; }
@@ -387,7 +385,7 @@ class CardsTab(QWidget):
     def export_verifier(self, silent: bool = False) -> None:
         """Met à jour verif/ : clé publique + liste de révocation signée, pour l'appli de vérification."""
         try:
-            path = self.service.export_for_verifier("verif")
+            path = self.service.export_for_verifier(TRUST_DIR)
         except Exception as exc:
             QMessageBox.critical(self, "SecureID", f"Export impossible : {exc}")
             return
@@ -555,7 +553,7 @@ def main() -> None:
     unlock = UnlockKeyDialog(KEYS_DIR / f"{KID}_private.pem", KID)
     if unlock.exec() != QDialog.Accepted:
         sys.exit(0)
-    DATA_DIR.mkdir(exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     Session = init_db(get_engine(DATA_DIR / "secureid.db"))
     service = IssuerService(Session, unlock.private_key, KID, "poste", DATA_DIR, OUT_DIR)
     controller = SessionController(app, service, AuthService(Session))

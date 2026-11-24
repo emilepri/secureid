@@ -8,7 +8,6 @@ Le dossier de confiance « verif/ » est préparé par l'application d'émission
 import sys
 import time
 from datetime import date
-from pathlib import Path
 
 import cv2
 from PIL import Image
@@ -23,8 +22,7 @@ from apps.issuer.main import apply_light_theme, pil_to_pixmap
 from core.qr_reader import decode_qr
 from core.verifier_service import VerifierService, Verdict
 
-TRUST_DIR = Path("verif")
-PHOTOS_DIR = Path("data") / "photos"  # photos de référence, si le vérificateur est sur le poste d'émission
+from core.paths import PHOTOS_DIR, TRUST_DIR  # noqa: E402  (photos : si le vérificateur est sur le poste d'émission)
 SCAN_EVERY_N_FRAMES = 4
 SAME_CARD_DELAY = 3.0  # secondes avant de réafficher la même carte
 
