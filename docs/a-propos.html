@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>À propos — SecureID</title>
+  <meta name="description" content="SecureID est conçu par Emile Abdoulaye PRISO, étudiant en Master 2 Sécurité des Systèmes d'Information à Dakar. Un projet ouvert, testé et documenté.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..800&family=JetBrains+Mono:wght@700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="lien-evitement" href="#contenu">Aller au contenu</a>
+<header class="entete">
+  <div class="conteneur entete__barre">
+    <a class="logo" href="index.html"><span class="logo__sceau" aria-hidden="true">SID</span>SecureID</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="index.html#fonctionnement">Comment ça marche</a>
+      <a href="services.html">Services</a>
+      <a href="index.html#securite">Sécurité</a>
+      <a href="a-propos.html" aria-current="page">À propos</a>
+      <a class="bouton bouton--clair" href="index.html#demo">Demander une démonstration</a>
+    </nav>
+  </div>
+</header>
+<hr class="filet">
+
+<main id="contenu">
+  <section class="bandeau">
+    <div class="conteneur">
+      <h1>Une question de sécurité, posée par quelqu'un dont c'est le métier</h1>
+    </div>
+  </section>
+
+  <section class="section section--blanche" aria-labelledby="titre-histoire">
+    <div class="conteneur">
+      <h2 id="titre-histoire">L'histoire</h2>
+      <!-- À PERSONNALISER : remplace ce paragraphe par ce qui t'a vraiment donné l'idée
+           (une situation vécue, une carte falsifiée que tu as vue, un besoin à l'école...). -->
+      <p>Je m'appelle Emile Abdoulaye PRISO. Je suis en Master 2 Sécurité des Systèmes d'Information à l'ESTM de Dakar, après une licence Réseau et Système Informatique à l'UCAO et trois stages en administration réseau à l'ASECNA.</p>
+      <p>SecureID part d'une question simple : comment permettre à n'importe quel agent, à l'entrée d'une école ou d'une entreprise, de savoir en une seconde si une carte est authentique, sans connexion Internet et sans être expert ? La réponse tient en deux idées de mon domaine : la signature numérique et la traçabilité.</p>
+      <p class="citation">Notre mission : rendre chaque carte vérifiable par tous, sans exposer les données de ceux qui la portent.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="titre-valeurs">
+    <div class="conteneur">
+      <h2 id="titre-valeurs">Nos valeurs, et ce qu'elles changent dans le logiciel</h2>
+      <div class="valeurs">
+        <div class="valeur"><h3>Transparence</h3><p>Le code est public sur GitHub. Vous pouvez lire exactement ce que fait chaque fonction.</p></div>
+        <div class="valeur"><h3>Respect des données</h3><p>Le QR ne contient que le nécessaire, et tout reste sur vos postes. Les badges entreprise n'affichent même pas la date de naissance.</p></div>
+        <div class="valeur"><h3>Rigueur</h3><p>71 tests automatisés et un journal d'audit chaîné : une erreur ou une manipulation ne passe pas inaperçue.</p></div>
+        <div class="valeur"><h3>Simplicité</h3><p>Une promotion entière s'émet depuis un fichier Excel, et un agent lit un verdict en couleur.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--blanche" aria-labelledby="titre-difference">
+    <div class="conteneur">
+      <h2 id="titre-difference">Ce qui change par rapport à une carte plastifiée</h2>
+      <ul class="risques" style="--orange: var(--bleu)">
+        <li><strong>La preuve est dans la carte</strong>Le QR signé contient les données d'origine : une retouche ne peut pas les modifier sans être détectée.</li>
+        <li><strong>Une carte perdue ne sert plus</strong>La révocation la rend inutilisable au contrôle suivant.</li>
+        <li><strong>Chaque action est tracée</strong>Qui a émis, révoqué ou s'est connecté, et quand.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="titre-confiance">
+    <div class="conteneur">
+      <h2 id="titre-confiance">Pourquoi nous faire confiance</h2>
+      <p class="chapeau">Pas de promesses : des éléments que vous pouvez vérifier vous-même.</p>
+      <ul class="parcours">
+        <li>Le <a href="https://github.com/emilepri/secureid">code source complet</a>, avec l'historique de chaque modification.</li>
+        <li>Le <a href="https://github.com/emilepri/secureid/blob/main/docs/threat-model.md">modèle de menaces</a>, qui liste aussi les limites assumées.</li>
+        <li>Des tests qui s'exécutent automatiquement à chaque modification du code.</li>
+        <li>Une démonstration en direct, où vous essayez vous-même de tromper le contrôle.</li>
+      </ul>
+      <div class="boutons">
+        <a class="bouton bouton--principal" href="index.html#demo">Demander une démonstration</a>
+        <a class="bouton bouton--secondaire" href="https://github.com/emilepri/secureid">Voir le code sur GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pied">
+  <div class="conteneur">
+    <div class="pied__grille">
+      <div>
+        <a class="logo" href="index.html"><span class="logo__sceau" aria-hidden="true">SID</span>SecureID</a>
+        <p style="margin-top:1rem">Cartes étudiantes et badges employés signés numériquement, vérifiables hors ligne.</p>
+      </div>
+      <nav aria-label="Pages"><h2>Pages</h2><ul>
+        <li><a href="index.html#fonctionnement">Comment ça marche</a></li><li><a href="services.html">Services</a></li>
+        <li><a href="a-propos.html">À propos</a></li><li><a href="index.html#demo">Démonstration</a></li></ul></nav>
+      <div><h2>Projet</h2><ul>
+        <li><a href="https://github.com/emilepri/secureid">Code sur GitHub</a></li>
+        <li><a href="https://github.com/emilepri/secureid/blob/main/docs/threat-model.md">Modèle de menaces</a></li></ul></div>
+    </div>
+    <p class="pied__bas">© 2026 Emile Abdoulaye PRISO. Les personnes et organisations présentées sur les cartes de démonstration sont fictives.</p>
+  </div>
+</footer>
+</body>
+</html>

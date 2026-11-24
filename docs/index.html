@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecureID — cartes étudiantes et badges employés vérifiables en une seconde</title>
+  <meta name="description" content="SecureID émet des cartes étudiantes et des badges employés signés numériquement. Un scan suffit pour savoir si une carte est authentique, modifiée, révoquée ou expirée, même sans Internet.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..800&family=JetBrains+Mono:wght@700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+<!-- ============ En-tête ============ -->
+<header class="entete">
+  <div class="conteneur entete__barre">
+    <a class="logo" href="index.html"><span class="logo__sceau" aria-hidden="true">SID</span>SecureID</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="index.html#fonctionnement">Comment ça marche</a>
+      <a href="services.html">Services</a>
+      <a href="index.html#securite">Sécurité</a>
+      <a href="a-propos.html">À propos</a>
+      <a class="bouton bouton--clair" href="#demo">Demander une démonstration</a>
+    </nav>
+  </div>
+</header>
+<hr class="filet">
+
+<main id="contenu">
+
+  <!-- ============ Hero : la carte est scannée, le verdict s'affiche ============ -->
+  <section class="hero">
+    <div class="conteneur hero__grille">
+      <div>
+        <h1>Une fausse carte se repère en une seconde.</h1>
+        <p class="chapeau">SecureID signe numériquement chaque carte étudiante et chaque badge employé. Au contrôle, un scan suffit pour savoir si la carte est authentique, modifiée, révoquée ou expirée, même sans Internet.</p>
+        <div class="boutons">
+          <a class="bouton bouton--clair" href="#demo">Demander une démonstration</a>
+          <a class="bouton bouton--contour" href="#fonctionnement">Voir comment ça marche</a>
+        </div>
+        <p class="hero__note">Démonstration gratuite et sans engagement, sur place ou à distance.</p>
+      </div>
+      <div class="scan">
+        <img class="scan__carte" src="img/carte_recto.png" width="1011" height="638"
+             alt="Badge employé SecureID de Fatou SALL, Dakar Data Systems : photo, fonction, service, date d'expiration, QR code signé et numéro EMP-2026-001.">
+        <span class="scan__ligne" aria-hidden="true"></span>
+        <p class="verdict" role="img" aria-label="Verdict de l'application : carte authentique">
+          <span class="verdict__coche" aria-hidden="true">✓</span>
+          <span>Carte authentique<small>Signature valide · lue hors ligne</small></span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Le problème ============ -->
+  <section class="section section--blanche" aria-labelledby="titre-probleme">
+    <div class="conteneur">
+      <h2 id="titre-probleme">Une carte plastifiée se contrôle à l'œil. C'est là qu'elle cède.</h2>
+      <p class="chapeau">Photo collée, nom retouché, carte d'un ancien étudiant encore en circulation : le contrôle visuel ne voit pas ce qui a été modifié.</p>
+      <ul class="risques">
+        <li><strong>Cartes retouchées</strong>Une date d'expiration ou un nom modifié passe inaperçu au portail.</li>
+        <li><strong>Fausses cartes</strong>Un modèle se reproduit avec une imprimante et un logiciel de mise en page.</li>
+        <li><strong>Cartes perdues ou volées</strong>Elles restent utilisables tant que personne ne peut les bloquer.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Comment ça marche ============ -->
+  <section class="section" id="fonctionnement" aria-labelledby="titre-fonctionnement">
+    <div class="conteneur">
+      <h2 id="titre-fonctionnement">Comment ça marche</h2>
+      <p class="chapeau">Trois étapes, sans matériel spécial : un ordinateur, une imprimante et une webcam.</p>
+      <ol class="etapes">
+        <li class="etape">
+          <figure><img src="img/emission.png" width="1280" height="820" loading="lazy" alt="Application d'émission : formulaire du titulaire à gauche, aperçu en direct du recto et du verso à droite."></figure>
+          <h3>Émettre et signer</h3>
+          <p>Vous saisissez le titulaire ou importez un fichier Excel. SecureID signe ses données avec la clé de votre établissement et les place dans le QR code.</p>
+        </li>
+        <li class="etape">
+          <figure><img src="img/planche_a4.png" width="497" height="702" loading="lazy" alt="Planche A4 de dix cartes avec traits de coupe, prête à imprimer en recto-verso."></figure>
+          <h3>Imprimer</h3>
+          <p>Une carte au format carte bancaire, ou des planches A4 de dix cartes recto-verso avec traits de coupe, sur une imprimante ordinaire.</p>
+        </li>
+        <li class="etape">
+          <figure><img src="img/verification.png" width="1280" height="800" loading="lazy" alt="Application de vérification : la carte est lue par la webcam et le verdict Carte authentique s'affiche en vert."></figure>
+          <h3>Scanner et vérifier</h3>
+          <p>À l'entrée, l'application lit le QR par webcam et affiche le verdict en grand, avec les données d'origine pour comparer.</p>
+        </li>
+      </ol>
+      <ul class="legende" aria-label="Les verdicts possibles">
+        <li class="ok">Authentique</li><li class="rev">Révoquée</li><li class="rev">Expirée</li><li class="faux">Falsifiée</li><li class="gris">Illisible</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Ce que vous obtenez ============ -->
+  <section class="section section--blanche" aria-labelledby="titre-atouts">
+    <div class="conteneur">
+      <h2 id="titre-atouts">Ce que SecureID change pour votre établissement</h2>
+      <div class="atouts">
+        <div class="atout"><h3>Toute modification est détectée</h3><p>Changer un seul caractère du nom ou de la date rend la signature invalide : la carte est signalée comme falsifiée.</p></div>
+        <div class="atout"><h3>Une carte perdue est bloquée aussitôt</h3><p>Vous la révoquez en deux clics avec un motif. Au contrôle suivant, elle apparaît en orange.</p></div>
+        <div class="atout"><h3>Aucune connexion nécessaire</h3><p>La vérification fonctionne hors ligne, sur un simple poste équipé d'une webcam.</p></div>
+        <div class="atout"><h3>500 cartes depuis un fichier Excel</h3><p>Chaque ligne est contrôlée avant l'émission, puis les planches A4 et un rapport sont générés.</p></div>
+        <div class="atout"><h3>Une carte qui a l'air officielle</h3><p>Guilloches, filigrane, micro-texte, image fantôme et pastille irisée compliquent la copie à l'œil nu.</p></div>
+        <div class="atout"><h3>Chaque action laisse une trace</h3><p>Émissions, révocations et connexions sont inscrites dans un journal dont aucune ligne ne peut être modifiée sans que cela se voie.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Deux usages ============ -->
+  <section class="section" aria-labelledby="titre-usages">
+    <div class="conteneur">
+      <h2 id="titre-usages">Pour les écoles comme pour les entreprises</h2>
+      <div class="usages">
+        <article class="usage">
+          <h3>Écoles et universités</h3>
+          <p>Cartes étudiantes numérotées <span class="numero">STU-2026-001</span>, avec statut, date de naissance et validité de l'année.</p>
+          <ul>
+            <li>Émission de toute une promotion depuis la liste des inscrits</li>
+            <li>Contrôle à l'entrée des examens et de la bibliothèque</li>
+            <li>Cartes des anciens étudiants révoquées en fin d'année</li>
+          </ul>
+        </article>
+        <article class="usage">
+          <h3>Entreprises</h3>
+          <p>Badges employés numérotés <span class="numero">EMP-2026-014</span>, avec fonction et service. La date de naissance n'y figure pas.</p>
+          <ul>
+            <li>Badge prêt le jour de l'arrivée d'un salarié</li>
+            <li>Badge révoqué le jour du départ</li>
+            <li>Contrôle des accès aux zones sensibles</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Sécurité et preuves (pas de faux clients) ============ -->
+  <section class="section section--blanche" id="securite" aria-labelledby="titre-securite">
+    <div class="conteneur">
+      <h2 id="titre-securite">Ne nous croyez pas sur parole : vérifiez</h2>
+      <p class="chapeau">SecureID est un projet ouvert. Tout ce qui est affirmé sur cette page peut être contrôlé.</p>
+      <div class="preuves">
+        <div class="preuve"><span class="preuve__pastille" aria-hidden="true">{ }</span><div><h3>Code ouvert</h3><p>Le code complet est public sur <a href="https://github.com/emilepri/secureid">GitHub</a>.</p></div></div>
+        <div class="preuve"><span class="preuve__pastille" aria-hidden="true">71</span><div><h3>71 tests automatisés</h3><p>Falsification, révocation, comptes et journal d'audit sont testés à chaque modification.</p></div></div>
+        <div class="preuve"><span class="preuve__pastille" aria-hidden="true">!</span><div><h3>Menaces documentées</h3><p>Le <a href="https://github.com/emilepri/secureid/blob/main/docs/threat-model.md">modèle de menaces</a> détaille les parades et les limites.</p></div></div>
+        <div class="preuve"><span class="preuve__pastille" aria-hidden="true">⌂</span><div><h3>Données chez vous</h3><p>Tout reste sur vos postes. Le QR ne contient que le strict nécessaire.</p></div></div>
+      </div>
+      <!-- Témoignages : ajouter ici les retours réels après un premier pilote. Ne jamais publier de témoignage inventé. -->
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section" aria-labelledby="titre-faq">
+    <div class="conteneur">
+      <h2 id="titre-faq">Questions fréquentes</h2>
+      <div class="faq">
+        <details><summary>Faut-il une connexion Internet ?</summary>
+          <p>Non. L'émission comme la vérification fonctionnent hors ligne. Les postes de contrôle reçoivent simplement un dossier contenant la clé publique et la liste des cartes révoquées.</p></details>
+        <details><summary>Que se passe-t-il si une carte est perdue ?</summary>
+          <p>Un administrateur la révoque avec un motif. Une fois la liste mise à jour sur les postes de contrôle, la carte est refusée et s'affiche en orange.</p></details>
+        <details><summary>Peut-on copier le QR code d'une vraie carte ?</summary>
+          <p>Une copie exacte reste lisible, c'est pourquoi l'application affiche les données et, quand elle est disponible, la photo d'origine : le contrôleur compare avec la personne. En revanche, toute modification du contenu est détectée.</p></details>
+        <details><summary>Où sont stockées les données ?</summary>
+          <p>Sur le poste d'émission de votre établissement, dans une base locale. Rien n'est envoyé vers un serveur extérieur.</p></details>
+        <details><summary>Faut-il une imprimante spéciale ?</summary>
+          <p>Non. Une imprimante couleur recto-verso suffit pour les planches A4. Une imprimante à cartes PVC peut aussi imprimer le PDF au format carte bancaire.</p></details>
+        <details><summary>Combien de temps pour émettre une promotion entière ?</summary>
+          <p>Le temps de préparer le fichier Excel et le dossier de photos : l'analyse et l'émission sont ensuite automatiques, avec un rapport ligne par ligne.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Appel final ============ -->
+  <section class="section final" id="demo" aria-labelledby="titre-demo">
+    <div class="conteneur final__grille">
+      <div>
+        <h2 id="titre-demo">Voyez une fausse carte se faire repérer</h2>
+        <p>En 20 minutes : émission d'une carte, tentative de falsification, révocation et contrôle à la webcam. Vous repartez avec des cartes de démonstration imprimées.</p>
+        <p>Vous préférez lire le code d'abord ? <a href="https://github.com/emilepri/secureid" style="color:#fff">Voir le projet sur GitHub</a>.</p>
+      </div>
+      <!-- Formulaire : à relier à un service d'envoi (ex. Formspree) en remplaçant action="#".
+           Ne jamais écrire de clé secrète ni de mot de passe dans ce fichier. -->
+      <form class="formulaire" id="form-demo" action="#" method="post">
+        <div class="champ"><label for="nom">Nom et prénom</label><input id="nom" name="nom" autocomplete="name" required></div>
+        <div class="champ"><label for="etablissement">Établissement ou entreprise</label><input id="etablissement" name="etablissement" autocomplete="organization" required></div>
+        <div class="champ"><label for="email">E-mail professionnel</label><input id="email" name="email" type="email" autocomplete="email" required></div>
+        <div class="champ"><label for="volume">Nombre de cartes par an</label>
+          <select id="volume" name="volume"><option>Moins de 100</option><option>100 à 500</option><option>500 à 2 000</option><option>Plus de 2 000</option></select></div>
+        <button class="bouton bouton--principal" type="submit">Demander une démonstration</button>
+        <p class="formulaire__note">Vos coordonnées servent uniquement à organiser la démonstration.</p>
+        <p class="formulaire__retour" id="retour" role="status" hidden></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- ============ Pied de page ============ -->
+<footer class="pied">
+  <div class="conteneur">
+    <div class="pied__grille">
+      <div>
+        <a class="logo" href="index.html"><span class="logo__sceau" aria-hidden="true">SID</span>SecureID</a>
+        <p style="margin-top:1rem">Cartes étudiantes et badges employés signés numériquement, vérifiables hors ligne.</p>
+      </div>
+      <nav aria-label="Pages"><h2>Pages</h2><ul>
+        <li><a href="index.html#fonctionnement">Comment ça marche</a></li><li><a href="services.html">Services</a></li>
+        <li><a href="a-propos.html">À propos</a></li><li><a href="#demo">Démonstration</a></li></ul></nav>
+      <div><h2>Projet</h2><ul>
+        <li><a href="https://github.com/emilepri/secureid">Code sur GitHub</a></li>
+        <li><a href="https://github.com/emilepri/secureid/blob/main/docs/threat-model.md">Modèle de menaces</a></li></ul></div>
+    </div>
+    <p class="pied__bas">© 2026 Emile Abdoulaye PRISO. Les personnes et organisations présentées sur les cartes de démonstration sont fictives.</p>
+  </div>
+</footer>
+<script>
+  // Tant que le formulaire n'est relié à aucun service d'envoi (action="#"), on le dit honnêtement
+  // au lieu de simuler un envoi. Supprime ce script une fois action="https://..." renseigné.
+  {
+    const form = document.getElementById("form-demo");
+    form.addEventListener("submit", (e) => {
+      if (form.getAttribute("action") !== "#") return;
+      e.preventDefault();
+      const retour = document.getElementById("retour");
+      retour.hidden = false;
+      retour.textContent = "L'envoi en ligne n'est pas encore activé. En attendant, contactez-moi depuis mon profil GitHub : github.com/emilepri";
+    });
+  }
+</script>
+</body>
+</html>
