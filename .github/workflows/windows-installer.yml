@@ -1,0 +1,78 @@
+name: windows-installer
+
+# Construit SecureID-Setup.exe sur une machine Windows de GitHub et le publie dans « Releases ».
+# Lancement : onglet Actions > windows-installer > Run workflow (ou en poussant un tag v1.2.3).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Numéro de version (ex. 1.0.0)"
+        required: true
+        default: "1.0.0"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # nécessaire pour créer la Release
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then V="${GITHUB_REF_NAME#v}"; else V="${{ inputs.version }}"; fi
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "Version : $V"
+
+      - name: Dépendances
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Tests (on ne publie pas une version qui échoue)
+        run: python -m pytest -q
+
+      - name: Exécutables (PyInstaller)
+        run: |
+          pyinstaller --noconfirm --windowed --name SecureID-Emission --icon assets\emission.ico --add-data "assets;assets" --collect-data reportlab launch_issuer.py
+          pyinstaller --noconfirm --windowed --name SecureID-Verification --icon assets\verification.ico --add-data "assets;assets" --collect-data reportlab launch_verifier.py
+
+      - name: Installateur (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; }
+          & $iscc "/DAppVersion=$env:VERSION" installer\secureid.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Fichier téléchargeable dans l'onglet Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: SecureID-Setup-${{ env.VERSION }}
+          path: dist/installer/*.exe
+
+      - name: Publication dans Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: SecureID ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          files: dist/installer/*.exe
+          body: |
+            Installateur Windows de SecureID ${{ env.VERSION }}.
+
+            1. Télécharge **SecureID-Setup-${{ env.VERSION }}.exe** ci-dessous et lance-le.
+            2. Si Windows affiche « Windows a protégé votre ordinateur », clique sur « Informations complémentaires » puis « Exécuter quand même » (l'installateur n'est pas signé numériquement).
+            3. Les raccourcis « SecureID Émission » et « SecureID Vérification » apparaissent sur le Bureau et dans le menu Démarrer.
+
+            Les données (clé, base, PDF) sont dans `%USERPROFILE%\SecureID` et sont conservées si tu désinstalles.

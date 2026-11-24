@@ -226,6 +226,11 @@ class VerifierWindow(QMainWindow):
 def main() -> None:
     app = QApplication(sys.argv)
     apply_light_theme(app)
+    from PySide6.QtGui import QIcon
+    from core.paths import RESOURCES
+    icone = RESOURCES / "assets" / "verification.ico"
+    if icone.exists():
+        app.setWindowIcon(QIcon(str(icone)))
     service, warnings = VerifierService.from_folder(TRUST_DIR, PHOTOS_DIR)
     window = VerifierWindow(service, warnings)
     screen = app.primaryScreen().availableGeometry()

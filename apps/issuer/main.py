@@ -548,6 +548,11 @@ class SessionController:
 def main() -> None:
     app = QApplication(sys.argv)
     apply_light_theme(app)
+    from PySide6.QtGui import QIcon
+    from core.paths import RESOURCES
+    icone = RESOURCES / "assets" / "emission.ico"
+    if icone.exists():
+        app.setWindowIcon(QIcon(str(icone)))
     app.setQuitOnLastWindowClosed(False)  # on gère nous-mêmes la fin (retour à l'écran de connexion)
     from apps.issuer.dialogs import UnlockKeyDialog
     unlock = UnlockKeyDialog(KEYS_DIR / f"{KID}_private.pem", KID)

@@ -91,7 +91,13 @@ Au premier lancement de l'application d'émission :
 
 Les dossiers `keys/`, `data/`, `sortie/` et `verif/` sont exclus du dépôt (`.gitignore`).
 
-## Exécutables Windows
+## Installer sans Python (Windows)
+
+Télécharge **SecureID-Setup-x.y.z.exe** dans les [Releases](https://github.com/emilepri/secureid/releases), lance-le,
+puis ouvre « SecureID Émission » ou « SecureID Vérification » depuis le Bureau ou le menu Démarrer.
+L'installateur est construit automatiquement par GitHub Actions (workflow `windows-installer`).
+
+## Exécutables Windows (construction manuelle)
 
 ```bat
 build.bat

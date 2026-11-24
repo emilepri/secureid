@@ -24,3 +24,6 @@ DATA_DIR = BASE / "data"
 OUT_DIR = BASE / "sortie"
 TRUST_DIR = BASE / "verif"
 PHOTOS_DIR = DATA_DIR / "photos"
+
+# Fichiers fournis avec l'application (icônes) : dans l'exécutable, PyInstaller les place dans sys._MEIPASS
+RESOURCES = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent))

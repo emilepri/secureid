@@ -10,3 +10,4 @@ verif/
 build/
 dist/
 *.spec
+dist/installer/

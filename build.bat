@@ -5,8 +5,8 @@ REM A lancer depuis la racine du projet.
 call .venv\Scripts\activate || goto :erreur
 pip install --timeout 120 --retries 10 pyinstaller || goto :erreur
 
-pyinstaller --noconfirm --windowed --name SecureID-Emission --collect-data reportlab launch_issuer.py || goto :erreur
-pyinstaller --noconfirm --windowed --name SecureID-Verification --collect-data reportlab launch_verifier.py || goto :erreur
+pyinstaller --noconfirm --windowed --name SecureID-Emission --icon assets\emission.ico --add-data "assets;assets" --collect-data reportlab launch_issuer.py || goto :erreur
+pyinstaller --noconfirm --windowed --name SecureID-Verification --icon assets\verification.ico --add-data "assets;assets" --collect-data reportlab launch_verifier.py || goto :erreur
 
 echo.
 echo Termine :
