@@ -15,7 +15,7 @@ from PIL import Image
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from core import audit, photo, sid_token
+from core import audit, photo, revocation, sid_token
 from core.pdf_export import export_card_pdf
 from core.render import PROFILES, CardData
 from core.templates import DEFAULT_TEMPLATE, render_card
@@ -192,6 +192,20 @@ class IssuerService:
                              motif=motif.strip(), operateur=self.operateur))
             audit.add_entry(s, self.operateur, "REVOCATION", card_id, motif.strip())
             s.commit()
+
+    def export_for_verifier(self, folder: str | Path = "verif") -> Path:
+        """Prépare le dossier de confiance du vérificateur : clé publique + liste de révocation signée."""
+        folder = Path(folder)
+        (folder / "cles").mkdir(parents=True, exist_ok=True)
+        pem = self.private_key.public_key().public_bytes(
+            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
+        (folder / "cles" / f"{self.kid}_public.pem").write_bytes(pem)
+        with self.Session() as s:
+            ids = list(s.scalars(select(Card.card_id).where(Card.statut == "REVOQUEE")))
+            rl = revocation.write(folder / "revocations.sid", ids, self.private_key, self.kid)
+            audit.add_entry(s, self.operateur, "EXPORT_REVOCATIONS", str(folder), f"{len(ids)} carte(s)")
+            s.commit()
+        return rl
 
     def check_audit(self) -> audit.ChainReport:
         with self.Session() as s:

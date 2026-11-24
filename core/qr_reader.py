@@ -24,11 +24,15 @@ def _detectors():
     yield cv2.QRCodeDetector()
 
 
-def decode_qr(image: np.ndarray | Image.Image, prefix: str = "SID1.") -> str | None:
-    """Retourne le texte du QR (commençant par prefix) ou None. image : BGR OpenCV ou image Pillow."""
+def decode_qr(image: np.ndarray | Image.Image, prefix: str = "SID1.", fast: bool = False) -> str | None:
+    """Retourne le texte du QR (commençant par prefix) ou None. image : BGR OpenCV ou image Pillow.
+
+    fast=True n'essaie que les deux variantes les plus rapides (flux webcam en temps réel).
+    """
     if isinstance(image, Image.Image):
         image = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)
-    for variant in _variants(image):
+    variants = list(_variants(image))
+    for variant in variants[1:3] if fast else variants:
         for detector in _detectors():
             try:
                 text = detector.detectAndDecode(variant)[0]

@@ -342,7 +342,10 @@ class CardsTab(QWidget):
         self.audit_btn.clicked.connect(self.check_audit)
         actions.addWidget(self.open_btn)
         actions.addWidget(self.revoke_btn)
+        self.export_btn = QPushButton("Exporter pour le vérificateur")
+        self.export_btn.clicked.connect(self.export_verifier)
         actions.addStretch()
+        actions.addWidget(self.export_btn)
         actions.addWidget(self.audit_btn)
         lay.addLayout(actions)
         self.rows: list[dict] = []
@@ -394,7 +397,20 @@ class CardsTab(QWidget):
         except ValidationError as exc:
             QMessageBox.warning(self, "SecureID", str(exc))
             return
+        self.export_verifier(silent=True)  # la liste de révocation locale reste à jour
         self.refresh()
+
+    def export_verifier(self, silent: bool = False) -> None:
+        """Met à jour verif/ : clé publique + liste de révocation signée, pour l'appli de vérification."""
+        try:
+            path = self.service.export_for_verifier("verif")
+        except Exception as exc:
+            QMessageBox.critical(self, "SecureID", f"Export impossible : {exc}")
+            return
+        if not silent:
+            QMessageBox.information(self, "Export pour le vérificateur",
+                                    f"Dossier de confiance mis à jour :\n{path.parent.resolve()}\n\n"
+                                    "Copie ce dossier « verif » sur les postes de contrôle.")
 
     def check_audit(self) -> None:
         report = self.service.check_audit()

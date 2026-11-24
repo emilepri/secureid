@@ -6,3 +6,4 @@ keys/
 .pytest_cache/
 sortie/
 data/
+verif/
