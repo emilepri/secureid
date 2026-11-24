@@ -181,15 +181,18 @@
         <p>En 20 minutes : émission d'une carte, tentative de falsification, révocation et contrôle à la webcam. Vous repartez avec des cartes de démonstration imprimées.</p>
         <p>Vous préférez lire le code d'abord ? <a href="https://github.com/emilepri/secureid" style="color:#fff">Voir le projet sur GitHub</a>.</p>
       </div>
-      <!-- Formulaire : à relier à un service d'envoi (ex. Formspree) en remplaçant action="#".
-           Ne jamais écrire de clé secrète ni de mot de passe dans ce fichier. -->
-      <form class="formulaire" id="form-demo" action="#" method="post">
+      <!-- FORMULAIRE : remplace action="#" par ton adresse Formspree, par exemple
+           action="https://formspree.io/f/abcdwxyz". Cette adresse n'est pas secrète : elle peut être publique. -->
+      <form class="formulaire" id="form-demo" action="https://formspree.io/f/mqpqwgkg" method="post">
         <div class="champ"><label for="nom">Nom et prénom</label><input id="nom" name="nom" autocomplete="name" required></div>
         <div class="champ"><label for="etablissement">Établissement ou entreprise</label><input id="etablissement" name="etablissement" autocomplete="organization" required></div>
         <div class="champ"><label for="email">E-mail professionnel</label><input id="email" name="email" type="email" autocomplete="email" required></div>
         <div class="champ"><label for="volume">Nombre de cartes par an</label>
           <select id="volume" name="volume"><option>Moins de 100</option><option>100 à 500</option><option>500 à 2 000</option><option>Plus de 2 000</option></select></div>
-        <button class="bouton bouton--principal" type="submit">Demander une démonstration</button>
+        <!-- Piège à robots : champ invisible que les humains laissent vide (Formspree rejette l'envoi s'il est rempli) -->
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+        <input type="hidden" name="_subject" value="SecureID : nouvelle demande de démonstration">
+        <button class="bouton bouton--principal" id="envoyer" type="submit">Demander une démonstration</button>
         <p class="formulaire__note">Vos coordonnées servent uniquement à organiser la démonstration.</p>
         <p class="formulaire__retour" id="retour" role="status" hidden></p>
       </form>
@@ -216,16 +219,47 @@
   </div>
 </footer>
 <script>
-  // Tant que le formulaire n'est relié à aucun service d'envoi (action="#"), on le dit honnêtement
-  // au lieu de simuler un envoi. Supprime ce script une fois action="https://..." renseigné.
+  // Envoi du formulaire sans quitter la page.
+  // Tant que action="#", aucun envoi n'est simulé : on l'indique honnêtement.
   {
     const form = document.getElementById("form-demo");
-    form.addEventListener("submit", (e) => {
-      if (form.getAttribute("action") !== "#") return;
-      e.preventDefault();
-      const retour = document.getElementById("retour");
+    const bouton = document.getElementById("envoyer");
+    const retour = document.getElementById("retour");
+
+    const afficher = (texte, ok) => {
       retour.hidden = false;
-      retour.textContent = "L'envoi en ligne n'est pas encore activé. En attendant, contactez-moi depuis mon profil GitHub : github.com/emilepri";
+      retour.textContent = texte;
+      retour.classList.toggle("formulaire__retour--erreur", !ok);
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (form.getAttribute("action") === "#") {
+        afficher("L'envoi en ligne n'est pas encore activé. En attendant, contactez-moi depuis mon profil GitHub : github.com/emilepri", false);
+        return;
+      }
+      bouton.disabled = true;
+      bouton.textContent = "Envoi en cours…";
+      try {
+        const reponse = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+        if (reponse.ok) {
+          form.reset();
+          afficher("Merci ! Votre demande est bien envoyée. Je vous réponds par e-mail pour fixer la démonstration.", true);
+        } else {
+          const donnees = await reponse.json().catch(() => ({}));
+          const detail = (donnees.errors || []).map((err) => err.message).join(" ");
+          afficher("L'envoi a échoué. " + (detail || "Vérifiez les champs puis réessayez."), false);
+        }
+      } catch {
+        afficher("Impossible d'envoyer la demande : vérifiez votre connexion Internet puis réessayez.", false);
+      } finally {
+        bouton.disabled = false;
+        bouton.textContent = "Demander une démonstration";
+      }
     });
   }
 </script>
