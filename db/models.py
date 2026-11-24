@@ -19,6 +19,8 @@ class Holder(Base):
     date_naissance: Mapped[str] = mapped_column(String(10))  # AAAA-MM-JJ
     role: Mapped[str] = mapped_column(String(40))
     etablissement: Mapped[str] = mapped_column(String(120))
+    fonction: Mapped[str] = mapped_column(String(80), default="")
+    service: Mapped[str] = mapped_column(String(80), default="")
     photo_path: Mapped[str | None] = mapped_column(String(255))
     photo_hash: Mapped[str | None] = mapped_column(String(64))
 
@@ -37,6 +39,9 @@ class Card(Base):
     expire_le: Mapped[str] = mapped_column(String(10))
     token: Mapped[str] = mapped_column(Text)
     statut: Mapped[str] = mapped_column(String(20), default="ACTIVE")  # ACTIVE | REVOQUEE
+    profil: Mapped[str] = mapped_column(String(20), default="ecole")    # ecole | entreprise
+    modele: Mapped[str] = mapped_column(String(20), default="officiel")
+    pdf_path: Mapped[str | None] = mapped_column(String(255))
 
     holder: Mapped[Holder] = relationship(back_populates="cards")
 

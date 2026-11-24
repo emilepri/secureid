@@ -5,3 +5,4 @@ keys/
 *.db
 .pytest_cache/
 sortie/
+data/
